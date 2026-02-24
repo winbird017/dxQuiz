@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教育DX・校務DX 用語習熟度診断 | WinBird</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #0ea5e9;
+            --accent: #f59e0b;
+            --intro-color: #16a34a;
+            --practice-color: #d97706;
+            --expert-color: #dc2626;
+        }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f0f4ff;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 60%, #4f46e5 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 20px 40px -10px rgba(37, 99, 235, 0.15), 0 8px 16px -6px rgba(0,0,0,0.08);
+        }
+        .btn-transition {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .progress-bar {
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .fade-in {
+            animation: fadeIn 0.45s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            70% { transform: scale(1.03); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: pop 0.35s cubic-bezier(0.4,0,0.2,1) forwards; }
+
+        .correct-bg { background-color: #f0fdf4; border-color: #4ade80; }
+        .wrong-bg { background-color: #fff7ed; border-color: #fb923c; }
+
+        /* Level select cards */
+        .level-card {
+            cursor: pointer;
+            border: 2.5px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            transition: all 0.22s ease;
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .level-card:hover { transform: translateY(-3px); }
+        .level-card.selected-intro { border-color: var(--intro-color); background: #f0fdf4; box-shadow: 0 0 0 3px rgba(22,163,74,0.15); }
+        .level-card.selected-practice { border-color: var(--practice-color); background: #fffbeb; box-shadow: 0 0 0 3px rgba(217,119,6,0.15); }
+        .level-card.selected-expert { border-color: var(--expert-color); background: #fff1f2; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); }
+
+        /* Count button */
+        .count-btn {
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.6rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #475569;
+        }
+        .count-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .count-btn.selected { border-color: var(--primary); background: #eff6ff; color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
+        /* Option buttons */
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.25rem;
+            border-radius: 0.875rem;
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.875rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .option-btn:hover:not(:disabled) { border-color: #2563eb; background: #eff6ff; box-shadow: 0 4px 14px rgba(37,99,235,0.1); transform: translateY(-1px); }
+        .option-btn.correct { border-color: #22c55e; background: #f0fdf4; }
+        .option-btn.wrong { border-color: #f97316; background: #fff7ed; }
+        .option-btn:disabled { cursor: default; transform: none; }
+
+        .option-label {
+            width: 2rem; height: 2rem; min-width: 2rem;
+            border-radius: 50%;
+            background: #eff6ff;
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem;
+        }
+        .option-btn.correct .option-label { background: #22c55e; color: #fff; }
+        .option-btn.wrong .option-label { background: #f97316; color: #fff; }
+
+        .feedback-box {
+            animation: fadeIn 0.3s ease;
+            border-radius: 0.875rem;
+            padding: 1rem 1.25rem;
+            margin-top: 1rem;
+            border-left: 4px solid;
+        }
+        .feedback-correct { background: #f0fdf4; border-color: #22c55e; color: #15803d; }
+        .feedback-wrong { background: #fff7ed; border-color: #f97316; color: #c2410c; }
+
+        /* Result */
+        .rank-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #fff;
+            border-radius: 9999px;
+            padding: 0.35rem 1.25rem;
+            font-weight: 800;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+        }
+
+        /* Dot bg decoration */
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+            background-size: 22px 22px;
+            pointer-events: none;
+        }
+        header { position: relative; overflow: hidden; }
+
+        .score-ring {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(#2563eb var(--pct, 0%), #e2e8f0 0%);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 24px rgba(37,99,235,0.2);
+            margin: 0 auto;
+            transition: --pct 1s ease;
+        }
+        .score-ring-inner {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: #fff;
+            border: none;
+            border-radius: 9999px;
+            padding: 0.75rem 2.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+            transition: all 0.2s ease;
+            margin-top: 1.25rem;
+        }
+        .next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.4); }
+
+        .step-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 0.4rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="gradient-bg text-white py-12 px-4 text-center">
+        <div class="max-w-4xl mx-auto">
+            <div class="inline-block bg-white/15 backdrop-blur-sm text-white text-xs font-bold px-4 py-1.5 rounded-full mb-4 tracking-widest">WinBird DX QUIZ</div>
+            <h1 class="text-3xl md:text-4xl font-black mb-3 leading-tight">先生のための教育DX<br>習熟度診断</h1>
+            <p class="text-base opacity-90 leading-relaxed mb-2">〜最新用語・キーワード編〜</p>
+            <p class="text-sm opacity-80 leading-relaxed">職員室で飛び交うカタカナ用語、なんとなく聞き流していませんか？<br>クイズ感覚で、今の自分の理解度をちょっと確かめてみましょう。</p>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 -mt-8 pb-20">
+        <div id="quiz-container" class="bg-white rounded-2xl card-shadow p-6 md:p-10 min-h-[400px]">
+
+            <!-- ① スタート設定画面 -->
+            <div id="start-screen" class="fade-in">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-2xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-black mb-2">診断を設定する</h2>
+                    <p class="text-gray-500 text-sm">まずは「今の自分」を知るところから。<br>所要時間は最短3分です。</p>
+                </div>
+
+                <!-- レベル選択 -->
+                <div class="mb-8">
+                    <div class="step-label">STEP 1 — レベルを選ぶ</div>
+                    <div class="section-title">あなたのDX習熟レベルは？</div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="level-card" id="level-intro" onclick="selectLevel('intro')">
+                            <div class="text-3xl mb-2">🟢</div>
+                            <div class="font-black text-base text-green-700">入門</div>
+                            <div class="text-xs text-gray-500 mt-1.5">「DXって何？」<br>から始めたい先生へ</div>
+                        </div>
+                        <div class="level-card" id="level-practice" onclick="selectLevel('practice')">
+                            <div class="text-3xl mb-2">🟡</div>
+                            <div class="font-black text-base text-yellow-600">実践</div>
+                            <div class="text-xs text-gray-500 mt-1.5">知ってるつもりを<br>卒業したいなら</div>
+                        </div>
+                        <div class="level-card" id="level-expert" onclick="selectLevel('expert')">
+                            <div class="text-3xl mb-2">🔴</div>
+                            <div class="font-black text-base text-red-600">専門</div>
+                            <div class="text-xs text-gray-500 mt-1.5">ITベンダーと<br>対等に話したい先生へ</div>
+                        </div>
+                    </div>
+                    <p id="level-desc" class="text-xs text-gray-400 text-center mt-2 min-h-[1.2rem]"></p>
+                </div>
+
+                <!-- 問題数選択 -->
+                <div class="mb-8">
+                    <div class="step-label">STEP 2 — 問題数を選ぶ</div>
+                    <div class="section-title">何問チャレンジしますか？</div>
+                    <div class="flex gap-3 justify-center">
+                        <div class="text-center">
+                            <button class="count-btn" id="count-5" onclick="selectCount(5)">5問</button>
+                            <div class="text-xs text-gray-400 mt-1">まず腕試し</div>
+                        </div>
+                        <div class="text-center">
+                            <button class="count-btn" id="count-10" onclick="selectCount(10)">10問</button>
+                            <div class="text-xs text-gray-400 mt-1">ちょうどいい本格派</div>
+                        </div>
+                        <div class="text-center">
+                            <button class="count-btn" id="count-20" onclick="selectCount(20)">20問</button>
+                            <div class="text-xs text-gray-400 mt-1">本気でやるなら全力で</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button id="start-btn" onclick="startQuiz()" disabled
+                        class="gradient-bg text-white font-bold py-4 px-12 rounded-full text-lg shadow-lg btn-transition opacity-40 cursor-not-allowed">
+                        用語診断を開始する →
+                    </button>
+                    <p id="start-hint" class="text-xs text-gray-400 mt-3">レベルと問題数を選択してください</p>
+                </div>
+            </div>
+
+            <!-- ② クイズ画面 -->
+            <div id="quiz-screen" class="hidden">
+                <div class="flex justify-between items-center mb-5">
+                    <span id="question-number" class="text-blue-600 font-bold text-sm tracking-widest"></span>
+                    <div class="w-1/2 bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                        <div id="progress" class="progress-bar h-full rounded-full" style="width:0%; background: linear-gradient(90deg,#0ea5e9,#2563eb);"></div>
+                    </div>
+                </div>
+
+                <!-- 難易度バッジ -->
+                <div id="difficulty-badge" class="mb-3"></div>
+
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl mb-5 border border-blue-100">
+                    <p id="question-text" class="text-lg font-bold leading-snug text-slate-800"></p>
+                </div>
+
+                <div id="options" class="space-y-3 fade-in"></div>
+
+                <div id="feedback-area"></div>
+
+                <div class="text-center">
+                    <button id="next-btn" class="next-btn hidden" onclick="nextQuestion()">
+                        次の問題へ →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ③ 結果画面 -->
+            <div id="result-screen" class="hidden fade-in">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-black mb-4">診断結果</h2>
+
+                    <div class="score-ring mx-auto mb-5" id="score-ring">
+                        <div class="score-ring-inner">
+                            <div class="text-2xl font-black text-blue-600" id="score-fraction"></div>
+                            <div class="text-xs text-gray-400 font-bold">正解</div>
+                        </div>
+                    </div>
+
+                    <div class="rank-badge" id="rank-badge"></div>
+                    <div id="result-rank" class="text-2xl md:text-3xl font-black text-slate-800 mb-4 leading-tight"></div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl mb-6 text-left border-l-4 border-blue-500">
+                        <h4 class="font-bold text-blue-800 mb-1.5 text-sm">認定メッセージ：</h4>
+                        <p id="result-description" class="text-gray-700 leading-relaxed text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- ② スコア連動おすすめメッセージ -->
+                <div id="score-recommendation" class="mb-8"></div>
+
+                <!-- 振り返り -->
+                <div class="border-t pt-8 mb-8">
+                    <h3 class="text-lg font-black mb-5 flex items-center gap-2">
+                        <span>🔍</span> 用語の「核心」を振り返る
+                    </h3>
+                    <div id="review-container" class="space-y-5"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 max-w-lg mx-auto">
+                    <!-- もう一度診断する + ④ランクアップヒント -->
+                    <button onclick="location.reload()"
+                        class="flex flex-col items-center gap-1 border-2 border-blue-500 text-blue-600 font-bold py-4 px-4 rounded-2xl btn-transition hover:bg-blue-50 text-sm">
+                        <span class="text-xl">🔄</span>
+                        <span>もう一度診断する</span>
+                        <span id="rankup-hint" class="text-xs font-normal text-blue-400 leading-snug mt-0.5"></span>
+                    </button>
+
+                    <!-- 用語集 -->
+                    <a href="#"
+                        class="flex flex-col items-center gap-1 border-2 border-teal-500 text-teal-700 font-bold py-4 px-4 rounded-2xl btn-transition hover:bg-teal-50 text-center">
+                        <span class="text-xl">📖</span>
+                        <span class="text-sm font-black">用語集を見る</span>
+                        <span class="text-xs font-normal text-teal-600 leading-snug mt-0.5">「あの用語、結局どういう意味？」<br>を解決する</span>
+                    </a>
+
+                    <!-- コラム -->
+                    <a href="#"
+                        class="flex flex-col items-center gap-1 border-2 border-violet-500 text-violet-700 font-bold py-4 px-4 rounded-2xl btn-transition hover:bg-violet-50 text-center">
+                        <span class="text-xl">✍️</span>
+                        <span class="text-sm font-black">コラムを読む</span>
+                        <span class="text-xs font-normal text-violet-600 leading-snug mt-0.5">「うちの学校、遅れてない？」<br>が気になる先生へ</span>
+                    </a>
+
+                    <!-- WinBird DX -->
+                    <a href="https://edu.winbird-gp.co.jp/dx"
+                        class="flex flex-col items-center gap-1 gradient-bg text-white font-bold py-4 px-4 rounded-2xl shadow-md btn-transition hover:opacity-90 text-center">
+                        <span class="text-xl">🚀</span>
+                        <span class="text-sm font-black">WinBird DXの詳細を見る</span>
+                        <span class="text-xs font-normal text-blue-100 leading-snug mt-0.5">診断結果を、学校の<br>「次の一手」に変えたいなら</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center text-gray-400 py-10 text-sm">
+        &copy; WinBird All Rights Reserved.
+    </footer>
+
+    <script>
+    // ============================================================
+    // 全問題データ (difficulty: intro / practice / expert)
+    // ============================================================
+    const allQuizData = [
+        // ===== 入門レベル =====
+        {
+            level: 'intro',
+            term: 'DX（デジタルトランスフォーメーション）',
+            question: '「DX」の本当のゴールはどれでしょう？',
+            options: [
+                { text: 'デジタルを使って教育や働き方を根本的に変革すること', correct: true },
+                { text: '紙の書類をすべてPDFに変換すること', correct: false },
+                { text: 'タブレットを全員に配布すること', correct: false }
+            ],
+            comment: 'DXは単なる「デジタル化」ではありません。デジタルを手段として、教育や業務の「在り方そのもの」を変えることがゴールです。'
+        },
+        {
+            level: 'intro',
+            term: 'デジタイゼーション',
+            question: '「デジタイゼーション」を最もよく表しているのはどれ？',
+            options: [
+                { text: '電話の欠席連絡をアプリ入力に変えること', correct: true },
+                { text: 'デジタルデータを使って授業の改善案を立てること', correct: false },
+                { text: 'AIで子どもの学習スタイルを最適化すること', correct: false }
+            ],
+            comment: 'デジタイゼーション＝アナログをデジタルに「置き換える」第1歩です。データを活用して業務を変えるのはデジタライゼーション（第2歩）です。'
+        },
+        {
+            level: 'intro',
+            term: 'GIGAスクール構想',
+            question: '「GIGAスクール構想」の「GIGA」が表す意味は？',
+            options: [
+                { text: 'Global and Innovation Gateway for All（全ての子供に革新的な学びの扉を）', correct: true },
+                { text: 'Gigabyte Internet Global Access（大容量通信の整備）', correct: false },
+                { text: 'Great Improvement of Gakko Academy（学校の大改革）', correct: false }
+            ],
+            comment: '一人一台端末と高速ネットワークを全国の子供たちに届けた国の計画で、現在のDXの出発点です。'
+        },
+        {
+            level: 'intro',
+            term: 'クラウド',
+            question: '「クラウド（クラウドコンピューティング）」とはどういう意味でしょう？',
+            options: [
+                { text: 'インターネット経由で使う外部のコンピューターサービス', correct: true },
+                { text: '学校の屋上に設置するサーバー室', correct: false },
+                { text: '雲のような分散型の印刷ネットワーク', correct: false }
+            ],
+            comment: 'GoogleドライブやMicrosoft 365が代表例。自校でサーバーを管理する「オンプレミス」と対になる言葉です。'
+        },
+        {
+            level: 'intro',
+            term: 'ゼロトラスト',
+            question: '「ゼロトラスト」という考え方の核心はどれ？',
+            options: [
+                { text: '場所や端末を問わず、毎回アクセスを検証する考え方', correct: true },
+                { text: '外部からの攻撃だけを防ぐファイアウォールを強化すること', correct: false },
+                { text: '信頼できる先生だけにIDを発行すること', correct: false }
+            ],
+            comment: '「校内ネットにいれば安全」という従来の境界防御を超えた新しいセキュリティ思想です。「誰も信じない」ではなく「毎回きちんと確認する」という意味です。'
+        },
+        {
+            level: 'intro',
+            term: '多要素認証（MFA）',
+            question: '多要素認証（MFA）とはどういうログイン方法でしょう？',
+            options: [
+                { text: 'パスワード＋スマホ通知や指紋など複数の方法で本人確認をすること', correct: true },
+                { text: '複数の先生が同じIDでシステムにログインすること', correct: false },
+                { text: '生徒ごとに異なる複雑なパスワードを割り当てること', correct: false }
+            ],
+            comment: 'パスワードが盗まれても、もう一つの鍵がなければ不正アクセスできないため、セキュリティが大幅に向上します。'
+        },
+        {
+            level: 'intro',
+            term: '生成AI',
+            question: 'ChatGPT・Geminiのような「生成AI」の特徴を正しく表しているのは？',
+            options: [
+                { text: '文章・画像・コードなどを自動で「作り出す」AI', correct: true },
+                { text: '決まったルールに従って計算を自動化するAI', correct: false },
+                { text: '人間の表情を分析して感情を読み取るAI', correct: false }
+            ],
+            comment: '生成AIは既存データを学習して新しいアウトプットを生み出します。「ハルシネーション（もっともらしい嘘）」のリスクもあるため、重要情報は必ず原典を確認しましょう。'
+        },
+        {
+            level: 'intro',
+            term: 'プロンプト',
+            question: '「プロンプト」とは何のことでしょう？',
+            options: [
+                { text: '生成AIへの指示文・依頼文のこと', correct: true },
+                { text: 'プログラミング学習ソフトの名前', correct: false },
+                { text: 'GIGAスクール端末の起動画面', correct: false }
+            ],
+            comment: '指示の書き方（プロンプトの質）でAIの回答品質は大きく変わります。「プロンプトエンジニアリング」として注目されているスキルです。'
+        },
+        {
+            level: 'intro',
+            term: '情報セキュリティポリシー',
+            question: '学校・教育委員会の「情報セキュリティポリシー」とは何でしょう？',
+            options: [
+                { text: '情報をどうやって守るかを組織全体で定めたルールブック', correct: true },
+                { text: '学校のWi-Fi利用を禁止するための規則', correct: false },
+                { text: 'ウイルス対策ソフトの利用規約', correct: false }
+            ],
+            comment: 'パスワード管理・私物端末の可否・漏えい時の対応フローなどを明文化します。ゼロトラスト導入の前提ともなる重要な文書です。'
+        },
+        {
+            level: 'intro',
+            term: '境界防御',
+            question: '「境界防御」を最もうまく例えているものは？',
+            options: [
+                { text: 'お城の城壁——外からの侵入だけを防ぐ従来の守り方', correct: true },
+                { text: '建物の中に入った人を全員チェックするセキュリティゲート', correct: false },
+                { text: '学校の玄関に警備員を常駐させること', correct: false }
+            ],
+            comment: 'クラウドやリモートワークが広がった現代では、城壁の「中」に侵入されると無防備になる弱点があり、ゼロトラストへの移行が進んでいます。'
+        },
+        {
+            level: 'intro',
+            term: 'ランサムウェア',
+            question: '「ランサムウェア」被害の典型的な手口はどれでしょう？',
+            options: [
+                { text: 'データを暗号化して「元に戻したければお金を払え」と要求するウイルス', correct: true },
+                { text: '端末の画面に広告を表示し続けるウイルス', correct: false },
+                { text: '先生のパスワードを盗み、成績を改ざんするウイルス', correct: false }
+            ],
+            comment: '公共機関・学校への被害が急増しています。バックアップ（3-2-1ルール）による復旧対策が重要です。'
+        },
+        {
+            level: 'intro',
+            term: 'フィッシング攻撃',
+            question: '「フィッシング・標的型攻撃」の手口はどれでしょう？',
+            options: [
+                { text: '実在の組織を装ったメールで偽サイトに誘導し、パスワードを盗む', correct: true },
+                { text: '学校の校庭に不審者が侵入して端末を盗む', correct: false },
+                { text: '子どもたちがゲームサイトにアクセスして情報が漏れる', correct: false }
+            ],
+            comment: '教育委員会・学校を狙った標的型メール攻撃が増加しています。不審なメールのリンクは絶対にクリックしないことが基本対策です。'
+        },
+        {
+            level: 'intro',
+            term: 'バックアップ（3-2-1ルール）',
+            question: '「3-2-1ルール」のバックアップで正しい説明はどれ？',
+            options: [
+                { text: '3か所・2種メディア・1か所は外部にデータを保管する方法', correct: true },
+                { text: '3日に1回・2台のPCに・1週間分のデータをバックアップ', correct: false },
+                { text: '3人の管理者が2つのパスワードで1台のサーバーを管理', correct: false }
+            ],
+            comment: 'ランサムウェア被害でもバックアップがあれば復旧できます。クラウドと外部ストレージの組み合わせが一般的です。'
+        },
+        {
+            level: 'intro',
+            term: 'VPN',
+            question: '「VPN（Virtual Private Network）」とはどんな仕組みでしょう？',
+            options: [
+                { text: 'インターネット上に作る「暗号化された専用トンネル」通信', correct: true },
+                { text: '学校内だけで使える特別な無線LANシステム', correct: false },
+                { text: '複数の画面をひとつの大型モニターで表示する技術', correct: false }
+            ],
+            comment: '自宅から安全に学校ネットワークへ接続できますが、同時接続の上限などの課題もあり、ゼロトラストへの移行が進んでいます。'
+        },
+        {
+            level: 'intro',
+            term: '校務DX',
+            question: '「校務DX」が目指す究極のゴールは何でしょう？',
+            options: [
+                { text: '先生が子どもと向き合う時間を増やすこと', correct: true },
+                { text: '学校の書類をすべてタブレットで管理すること', correct: false },
+                { text: '保護者へのお知らせを自動送信すること', correct: false }
+            ],
+            comment: '成績入力・通知表作成・保護者連絡などの事務作業をデジタルで効率化し、先生が本来の教育活動に集中できる環境を作ることが目的です。'
+        },
+        {
+            level: 'intro',
+            term: '個別最適な学び',
+            question: '「個別最適な学び」はどんな概念でしょう？',
+            options: [
+                { text: '一人ひとりの理解度・興味・学習スタイルに合わせた学び方の実現', correct: true },
+                { text: '生徒一人ひとりに専用の先生を配置した個別指導体制', correct: false },
+                { text: 'AIが完全に授業を自動化して先生不要にすること', correct: false }
+            ],
+            comment: '学習指導要領に明記された概念です。GIGAスクール端末・AIドリル・学習eポータルがこれを技術的に支えます。「協働的な学び」とセットで語られます。'
+        },
+        {
+            level: 'intro',
+            term: 'BYOD',
+            question: '「BYOD（Bring Your Own Device）」とは何のことでしょう？',
+            options: [
+                { text: '先生・児童が私物の端末を学校で使うこと', correct: true },
+                { text: '学校が購入した端末を生徒が自宅に持ち帰ること', correct: false },
+                { text: '古い端末を新しい端末に買い替えること', correct: false }
+            ],
+            comment: 'コスト削減のメリットがある一方、「私物端末を学校が管理できない」というセキュリティリスクもあります。MDMや情報セキュリティポリシーとの整合が必要です。'
+        },
+        {
+            level: 'intro',
+            term: 'デジタル教科書',
+            question: 'デジタル教科書の特徴として正しいものはどれでしょう？',
+            options: [
+                { text: '動画・音声・書き込みなど、紙にはない機能を持つ電子版教科書', correct: true },
+                { text: '担任の先生がオリジナルで作成するデジタル教材', correct: false },
+                { text: 'インターネットにアクセスして使うウェブサービス全般', correct: false }
+            ],
+            comment: '2024年度から本格導入が始まりました。読み書きに困難がある児童生徒への合理的配慮としても有効です。'
+        },
+        {
+            level: 'intro',
+            term: '個人情報保護',
+            question: '学校が扱う個人情報として「特に慎重な管理」が必要なものは？',
+            options: [
+                { text: '生徒の住所・成績・家庭環境などのセンシティブな情報', correct: true },
+                { text: '学校の校名や住所などの公開情報', correct: false },
+                { text: '先生の出退勤記録のみ', correct: false }
+            ],
+            comment: '個人情報保護法および各自治体の条例に基づく管理義務があります。漏えいは法的責任だけでなく、社会的信頼も大きく失います。'
+        },
+        {
+            level: 'intro',
+            term: '働き方改革',
+            question: '学校の「働き方改革」とデジタルの関係で正しいものは？',
+            options: [
+                { text: '校務DXやゼロトラストを使って長時間労働を解消する取り組み', correct: true },
+                { text: '先生の採用基準をデジタルリテラシー中心に変えること', correct: false },
+                { text: '校務を全て保護者にデジタルで委託すること', correct: false }
+            ],
+            comment: '文科省が推進する働き方改革の手段として、在宅勤務・オンライン会議・AI活用・書類ペーパーレス化などのDX施策が活用されています。'
+        },
+        {
+            level: 'intro',
+            term: '校務支援システム',
+            question: '「校務支援システム（統合型）」が管理する業務として正しいものは？',
+            options: [
+                { text: '成績処理・出欠管理・通知表作成・保護者連絡など学校業務全般', correct: true },
+                { text: '子どもたちの学習アプリの利用状況だけ', correct: false },
+                { text: '学校の備品・施設管理のみ', correct: false }
+            ],
+            comment: 'DX推進の出発点となる「学校の基幹システム」です。クラウド化・AI活用・他システムとの連携が今後の大きなテーマです。'
+        },
+        {
+            level: 'intro',
+            term: '学習eポータル',
+            question: '「学習eポータル」を最もうまく表している説明はどれ？',
+            options: [
+                { text: 'GIGAスクール端末を開いたときの「玄関」——各学習アプリへの入口', correct: true },
+                { text: '文部科学省が提供する公式の電子書籍サービス', correct: false },
+                { text: '学習データを保護者が確認できるウェブページ', correct: false }
+            ],
+            comment: 'SSOと連携することで、一度のログインで複数の学習アプリを使えるようになります。'
+        },
+        {
+            level: 'intro',
+            term: 'Windows Hello',
+            question: '「Windows Hello」はどんな機能でしょう？',
+            options: [
+                { text: '顔や指紋などの生体情報でWindowsにログインする機能', correct: true },
+                { text: 'Microsoftの音声アシスタントがあいさつする機能', correct: false },
+                { text: 'Windowsの起動を自動化するスクリプト機能', correct: false }
+            ],
+            comment: 'パスワードの代わりに生体認証を使うため、パスワード忘れや盗み見を防ぎます。多要素認証の一形態でもあります。'
+        },
+        {
+            level: 'intro',
+            term: '保護者DX',
+            question: '「保護者DX」として最も適切な取り組みはどれでしょう？',
+            options: [
+                { text: '欠席連絡・アンケート・面談予約をアプリやウェブで完結させること', correct: true },
+                { text: '保護者向けの説明会をオンライン動画で事前配信すること', correct: false },
+                { text: '保護者に学校のSNSアカウントをフォローしてもらうこと', correct: false }
+            ],
+            comment: '先生の電話対応時間の削減と保護者の利便性向上が同時に実現します。校務DX・働き方改革の重要な柱の一つです。'
+        },
+        // ===== 実践レベル =====
+        {
+            level: 'practice',
+            term: 'デジタライゼーション',
+            question: '「デジタライゼーション」の正しい説明はどれでしょう？',
+            options: [
+                { text: 'デジタル化されたデータを活用して状況を「見える化」すること', correct: true },
+                { text: '紙の書類をスキャンしてデータとして保存すること', correct: false },
+                { text: '学校全体のシステムをクラウドに移行すること', correct: false }
+            ],
+            comment: 'DXの「第2歩」です。デジタイゼーション（データ化）→デジタライゼーション（見える化）→DX（変革）という3段階の中間ステップです。'
+        },
+        {
+            level: 'practice',
+            term: 'LGWAN',
+            question: '「LGWAN（エルジーワン）」とはどんなネットワークでしょう？',
+            options: [
+                { text: '自治体専用の「閉じたインターネット」——行政機関だけが接続できる', correct: true },
+                { text: '学校内の無線LANシステム全般のこと', correct: false },
+                { text: '大手キャリアの学校向け専用回線サービス', correct: false }
+            ],
+            comment: 'マイナンバーや住民情報など最重要情報を扱います。LGWANとインターネットを切り離す「三層分離」の根幹です。'
+        },
+        {
+            level: 'practice',
+            term: '三層分離',
+            question: '「三層分離」が先生の業務を複雑にする主な理由は？',
+            options: [
+                { text: '3つのネットワークを完全分離しているためデータのやりとりができない', correct: true },
+                { text: '3種類のIDとパスワードを覚えなければならないから', correct: false },
+                { text: 'ウイルス対策ソフトを3つ同時に動かすため端末が重くなるから', correct: false }
+            ],
+            comment: 'セキュリティは高い一方、業務効率を著しく下げるとされています。文科省はゼロトラストを採用した「β′モデル」への移行を推奨しています。'
+        },
+        {
+            level: 'practice',
+            term: 'シングルサインオン（SSO）',
+            question: '「シングルサインオン（SSO）」の利点はどれでしょう？',
+            options: [
+                { text: '一度ログインするだけで複数のサービスをパスワードなしで使い続けられる', correct: true },
+                { text: '一つのアカウントを複数の先生で共有して管理できる', correct: false },
+                { text: '毎日自動でパスワードを変更してくれる機能', correct: false }
+            ],
+            comment: 'MFAと組み合わせることで「セキュリティを高めながら利便性も上げる」というゼロトラストの核心機能です。'
+        },
+        {
+            level: 'practice',
+            term: 'MDM（端末管理）',
+            question: '「MDM（Mobile Device Management）」でできないことはどれでしょう？',
+            options: [
+                { text: '紛失した端末のデータを自動でバックアップすること', correct: true },
+                { text: '紛失した端末を遠隔からロック・データ消去すること', correct: false },
+                { text: '全端末に一斉にアプリを配信すること', correct: false }
+            ],
+            comment: 'MDMは「管理・制御」のツールです。自動バックアップは別のバックアップシステムで対応します。GIGAスクール端末の効率的な運用に欠かせません。'
+        },
+        {
+            level: 'practice',
+            term: 'ID管理',
+            question: 'ID管理において「デプロビジョニング」が重要な理由は？',
+            options: [
+                { text: '退職・転出した人のIDを消し忘れると不正アクセスのリスクになるから', correct: true },
+                { text: 'IDの数が増えすぎるとシステムが重くなるから', correct: false },
+                { text: '古いIDは個人情報保護法違反になるから', correct: false }
+            ],
+            comment: '「入学・採用時のID付与（プロビジョニング）」と「卒業・退職時のID削除（デプロビジョニング）」の自動化がセキュリティ上の重要課題です。'
+        },
+        {
+            level: 'practice',
+            term: 'リスクアセスメント',
+            question: '「リスクアセスメント」とはどんな作業でしょう？',
+            options: [
+                { text: 'リスクの発生可能性と影響度を評価し、対策の優先順位を決める作業', correct: true },
+                { text: 'サイバー攻撃が実際に起きたときの被害状況を調べること', correct: false },
+                { text: 'セキュリティ機器の価格と性能を比較すること', correct: false }
+            ],
+            comment: 'セキュリティ対策の出発点です。「何が起きたらどれくらい困るか」を先に洗い出すことで、限られた予算を効果的に使えます。'
+        },
+        {
+            level: 'practice',
+            term: 'ダッシュボード',
+            question: '教育現場での「ダッシュボード」の活用例として正しいのは？',
+            options: [
+                { text: '出欠状況・学習進捗・体力テストを一画面にまとめて把握する', correct: true },
+                { text: '車に搭載されたカーナビシステムのこと', correct: false },
+                { text: 'ゲーム感覚で学習できるインタラクティブな黒板', correct: false }
+            ],
+            comment: '「見える化」の代表的な手段です。校長が学校全体の状況を把握したり、担任が学級の傾向をひと目で確認したりするのに使われます。'
+        },
+        {
+            level: 'practice',
+            term: 'BYAD',
+            question: '「BYAD」が「BYOD」と異なる最大のポイントは？',
+            options: [
+                { text: '学校・教育委員会が事前に承認した機種・設定の端末のみ使用を許可する', correct: true },
+                { text: '生徒の保護者が購入費用を全額負担すること', correct: false },
+                { text: '古い端末でも使えるようにソフトウェアを制限すること', correct: false }
+            ],
+            comment: 'BYODのリスクを抑えつつコスト削減も図れる考え方です。GIGAスクール端末の更新時期に向けて注目されています。'
+        },
+        {
+            level: 'practice',
+            term: 'データ利活用',
+            question: '「データ利活用」で最も大切な考え方はどれでしょう？',
+            options: [
+                { text: 'データを集める前に「何を改善するか」という目的を決めておくこと', correct: true },
+                { text: 'できるだけ多くのデータを集めてクラウドに保存しておくこと', correct: false },
+                { text: '集めたデータは教育委員会だけが分析して活用すること', correct: false }
+            ],
+            comment: 'データを「集めること」がゴールではありません。出欠データ・テスト結果・学習ログを活用して、不登校の早期発見や授業改善に役立てることが重要です。'
+        },
+        {
+            level: 'practice',
+            term: 'スタディログ',
+            question: '「スタディログ（学習履歴）」を活用することで何が実現できるでしょう？',
+            options: [
+                { text: 'どの問題でつまずいているかを特定し、的確な支援ができる', correct: true },
+                { text: 'ゲームでの学習時間を家庭学習として自動カウントできる', correct: false },
+                { text: '先生の授業動画を生徒が繰り返し視聴できる', correct: false }
+            ],
+            comment: '正答率・取り組み時間・間違えた問題などを記録したデータです。個別最適な学びを実現するうえで欠かせない基盤データです。'
+        },
+        {
+            level: 'practice',
+            term: 'データの学習利用',
+            question: '生成AIへの入力で最も注意すべきことはどれでしょう？',
+            options: [
+                { text: '生徒の氏名・成績・家庭環境などの個人情報を入力しないこと', correct: true },
+                { text: '一度に長い文章を入力しないこと', correct: false },
+                { text: '日本語で入力すると精度が下がるため英語で入力すること', correct: false }
+            ],
+            comment: '多くの生成AIは入力内容を学習に利用することがあります。個人情報入力は厳禁です。自治体向けの専用契約（データを学習に使わない）の活用も進んでいます。'
+        },
+        {
+            level: 'practice',
+            term: 'AIガイドライン（教育委員会版）',
+            question: '学校でのAIガイドラインが明確にすべき内容はどれでしょう？',
+            options: [
+                { text: 'どのAIを使っていいか・個人情報入力可否・授業での利用範囲など', correct: true },
+                { text: 'AIを使った採点を完全に禁止するルール', correct: false },
+                { text: 'AIが作成した教材の著作権の帰属先', correct: false }
+            ],
+            comment: '情報セキュリティポリシーと一体で整備することが望ましいとされています。生成AIの急速な普及を受け、各教育委員会が独自のルール策定を進めています。'
+        },
+        {
+            level: 'practice',
+            term: 'Google Workspace for Education Plus',
+            question: 'Google Workspace for Education「Plus」の特徴として正しいのは？',
+            options: [
+                { text: 'DLP・コンテキストアウェアアクセス・高度なログ管理などセキュリティ機能が使える上位プラン', correct: true },
+                { text: 'Googleが学校に無償で提供する基本プランのこと', correct: false },
+                { text: 'Chromebookのみで使える特別バージョン', correct: false }
+            ],
+            comment: 'GmailやDriveなどの基本機能に加え、企業レベルのセキュリティ機能が使えます。セキュリティ強化提案でよく登場するプランです。'
+        },
+        {
+            level: 'practice',
+            term: 'Microsoft 365 Education',
+            question: 'Microsoft 365 Educationが学校向けに提供する主要なツールはどれ？',
+            options: [
+                { text: 'Word・Excel・PowerPoint・Teamsなどのクラウドサービス群', correct: true },
+                { text: 'Windowsのライセンスのみを安く提供するサービス', correct: false },
+                { text: 'GIGAスクール端末専用のセキュリティソフト', correct: false }
+            ],
+            comment: 'Google Workspaceと並ぶ2大選択肢の一つです。Windowsを採用する学校で広く使われています。'
+        },
+        // ===== 専門レベル =====
+        {
+            level: 'expert',
+            term: 'コンテキストアウェア アクセス',
+            question: '「コンテキストアウェア アクセス」で判断に使われる「コンテキスト（文脈）」はどれ？',
+            options: [
+                { text: 'アクセスする場所・端末・時間帯などの状況情報', correct: true },
+                { text: 'メールの文章や添付ファイルの内容', correct: false },
+                { text: '先生のプロフィールや職歴情報', correct: false }
+            ],
+            comment: '「深夜に海外からのアクセスはブロック」などが可能になります。IDとパスワードだけでなく、状況を見て判断する「賢い門番」です。'
+        },
+        {
+            level: 'expert',
+            term: 'DLP',
+            question: '「DLP（Data Loss Prevention）」がブロックする典型的な例は？',
+            options: [
+                { text: 'マイナンバーや生徒の住所が含まれたファイルの外部送信', correct: true },
+                { text: '生徒が授業中に許可されていないサイトにアクセスすること', correct: false },
+                { text: 'USB経由でウイルスが端末に侵入すること', correct: false }
+            ],
+            comment: '「うっかりミスを防ぐ情報漏えいチェッカー」です。メールやファイルの中身を自動チェックして警告・送信ブロックを行います。'
+        },
+        {
+            level: 'expert',
+            term: 'EDR',
+            question: '「EDR（Endpoint Detection and Response）」と従来のウイルス対策ソフトの違いは？',
+            options: [
+                { text: 'EDRは端末内部の不審な挙動をリアルタイムに検知・記録・対応できる', correct: true },
+                { text: 'EDRは既知のウイルスのみをブロックする高性能版ウイルス対策ソフト', correct: false },
+                { text: 'EDRはネットワーク全体を監視するクラウド型ファイアウォール', correct: false }
+            ],
+            comment: 'ランサムウェアなど高度な攻撃を検知できます。「防犯カメラ」に例えられ、GIGAスクール端末更新にあわせた導入提案が増えています。'
+        },
+        {
+            level: 'expert',
+            term: 'ログ管理',
+            question: '「ログ管理」がゼロトラスト環境で特に重要な理由は？',
+            options: [
+                { text: '「いつ・どこから・誰が・何をしたか」を追跡する証拠になるから', correct: true },
+                { text: '生徒のログイン時間を記録して出欠確認に使えるから', correct: false },
+                { text: 'ログを公開することでセキュリティの透明性を確保できるから', correct: false }
+            ],
+            comment: 'ログは「取るだけ」では不十分。定期的な確認と異常検知の仕組みまで含めて整備することが重要です。'
+        },
+        {
+            level: 'expert',
+            term: 'インシデント対応・CSIRT',
+            question: '「CSIRT」がない教育委員会で最低限すべきことはどれでしょう？',
+            options: [
+                { text: '「誰に連絡→封じ込め→復旧→再発防止」のフロー文書を事前に作成する', correct: true },
+                { text: '大手セキュリティ会社と常時契約して対応を丸投げする', correct: false },
+                { text: '事故が起きたらまず全てのシステムの電源を切る', correct: false }
+            ],
+            comment: '専門チームがなくても、インシデント対応フローの文書化は必須です。「誰が何をするか」が曖昧だと被害が拡大します。'
+        },
+        {
+            level: 'expert',
+            term: 'xAPI',
+            question: '「xAPI（エックスエーピーアイ）」の役割として正しいのは？',
+            options: [
+                { text: '異なる学習アプリ間で学習履歴データを統一形式でやりとりする国際規格', correct: true },
+                { text: 'AIが自動で学習計画を立てるためのプログラム言語', correct: false },
+                { text: 'GIGAスクール端末のアプリを一括インストールするAPI', correct: false }
+            ],
+            comment: '文部科学省が推進する学習データ標準化の核心です。学習eポータルのSSO対応と並んで、教育クラウドサービス選定の重要な要件になっています。'
+        },
+        {
+            level: 'expert',
+            term: 'AppSheet',
+            question: '「AppSheet」が教育現場にもたらすメリットとして最も正確なのは？',
+            options: [
+                { text: 'プログラミング知識なしで業務改善アプリを現場の先生が作れる', correct: true },
+                { text: 'AppStoreから教育向けアプリを無料で大量インストールできる', correct: false },
+                { text: 'Googleが学校向けに無償提供している授業支援アプリ', correct: false }
+            ],
+            comment: 'Googleスプレッドシートのデータを使って「備品管理アプリ」「日報アプリ」などを作れます。ノーコード開発ツールの代表例です。'
+        },
+        {
+            level: 'expert',
+            term: '教育クラウドプラットフォーム',
+            question: '「教育クラウドプラットフォーム（統合型）」を導入する主なメリットはどれ？',
+            options: [
+                { text: '学習・校務・セキュリティを一基盤に統合しSSOやデータ連携が実現できる', correct: true },
+                { text: '複数のクラウドサービスのコストを個別に削減できる', correct: false },
+                { text: 'インターネットなしで使えるオフライン対応の教育システム', correct: false }
+            ],
+            comment: 'バラバラだったシステムを統合することで、利便性・データ連携・運用コスト削減が同時に実現します。提案書での「プラットフォーム型」提案の増加が特徴です。'
+        },
+        {
+            level: 'expert',
+            term: 'ユーザー管理クラウド',
+            question: '「ユーザー管理クラウド」の特徴として最も正確なのは？',
+            options: [
+                { text: '名簿を一か所で更新すれば連携する全サービスの名簿も自動更新される', correct: true },
+                { text: '生徒の学習データを保護者が確認できるクラウドサービス', correct: false },
+                { text: 'IDとパスワードを一括で生成・配布するセキュリティサービス', correct: false }
+            ],
+            comment: 'ID管理の「司令塔」となるツールです。年度末の膨大な名簿更新作業を大幅に削減します。'
+        },
+        {
+            level: 'expert',
+            term: '教育情報セキュリティポリシーに関するガイドライン',
+            question: '文科省のセキュリティポリシーガイドライン（最新版）で大幅に強化された内容は？',
+            options: [
+                { text: 'クラウド活用と生成AIの利用に関する記載', correct: true },
+                { text: '紙の書類の保管方法と廃棄手順', correct: false },
+                { text: '校内無線LANの設置基準と機器スペック', correct: false }
+            ],
+            comment: '2024年度改訂でクラウド活用・生成AI利用に関する記載が大幅追加されました。各教育委員会がセキュリティポリシーを整備する際のひな形となる公式文書です。'
+        }
+    ];
+
+    // ============================================================
+    // 状態管理
+    // ============================================================
+    let selectedLevel = null;
+    let selectedCount = null;
+    let quizSet = [];
+    let currentQuestion = 0;
+    let correctCount = 0;
+    let userAnswers = []; // {selectedIndex, correctIndex}
+    let answered = false;
+
+    // ============================================================
+    // スタート画面
+    // ============================================================
+    function selectLevel(level) {
+        selectedLevel = level;
+        ['intro','practice','expert'].forEach(l => {
+            const el = document.getElementById('level-' + l);
+            el.className = 'level-card';
+        });
+        const card = document.getElementById('level-' + level);
+        card.className = 'level-card selected-' + level;
+
+        const descs = {
+            intro: '🟢 入門レベルの用語から出題します',
+            practice: '🟡 入門＋実践レベルの用語から出題します',
+            expert: '🔴 入門・実践・専門の全レベルから出題します'
+        };
+        document.getElementById('level-desc').textContent = descs[level];
+        checkStartable();
+    }
+
+    function selectCount(count) {
+        selectedCount = count;
+        [5,10,20].forEach(c => {
+            document.getElementById('count-' + c).className = 'count-btn';
+        });
+        document.getElementById('count-' + count).className = 'count-btn selected';
+        checkStartable();
+    }
+
+    function checkStartable() {
+        const btn = document.getElementById('start-btn');
+        const hint = document.getElementById('start-hint');
+        if (selectedLevel && selectedCount) {
+            btn.disabled = false;
+            btn.className = 'gradient-bg text-white font-bold py-4 px-12 rounded-full text-lg shadow-lg btn-transition cursor-pointer hover:scale-105';
+            hint.textContent = `${selectedCount}問 / レベル：${['','入門','実践','専門'][['','intro','practice','expert'].indexOf(selectedLevel)]} の診断を開始します`;
+        } else {
+            btn.disabled = true;
+            btn.className = 'gradient-bg text-white font-bold py-4 px-12 rounded-full text-lg shadow-lg btn-transition opacity-40 cursor-not-allowed';
+            hint.textContent = 'レベルと問題数を選択してください';
+        }
+    }
+
+    function getLevelPool() {
+        const levels = {
+            intro: ['intro'],
+            practice: ['intro', 'practice'],
+            expert: ['intro', 'practice', 'expert']
+        };
+        return allQuizData.filter(q => levels[selectedLevel].includes(q.level));
+    }
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function startQuiz() {
+        const pool = getLevelPool();
+        const shuffled = shuffle(pool);
+        quizSet = shuffled.slice(0, selectedCount);
+        // Also shuffle options within each question
+        quizSet = quizSet.map(q => {
+            const opts = shuffle(q.options.map((o, i) => ({ ...o, origIndex: i })));
+            return { ...q, options: opts };
+        });
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        currentQuestion = 0;
+        correctCount = 0;
+        userAnswers = [];
+        showQuestion();
+    }
+
+    // ============================================================
+    // クイズ画面
+    // ============================================================
+    function showQuestion() {
+        answered = false;
+        const q = quizSet[currentQuestion];
+        const total = quizSet.length;
+
+        document.getElementById('question-number').textContent = `Term ${String(currentQuestion + 1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
+        document.getElementById('progress').style.width = `${((currentQuestion + 1) / total) * 100}%`;
+
+        // Difficulty badge
+        const levelColors = { intro: 'bg-green-100 text-green-700', practice: 'bg-yellow-100 text-yellow-700', expert: 'bg-red-100 text-red-700' };
+        const levelLabels = { intro: '🟢 入門', practice: '🟡 実践', expert: '🔴 専門' };
+        document.getElementById('difficulty-badge').innerHTML =
+            `<span class="inline-block text-xs font-bold px-3 py-1 rounded-full ${levelColors[q.level]}">${levelLabels[q.level]}</span>
+             <span class="ml-2 text-xs text-gray-400 font-bold">${q.term}</span>`;
+
+        document.getElementById('question-text').textContent = q.question;
+        document.getElementById('feedback-area').innerHTML = '';
+        document.getElementById('next-btn').classList.add('hidden');
+
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+        optionsContainer.className = 'space-y-3 fade-in';
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `
+                <span class="option-label">${String.fromCharCode(65 + index)}</span>
+                <span class="flex-1 text-sm md:text-base leading-snug">${option.text}</span>
+            `;
+            btn.onclick = () => selectOption(index);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectOption(selectedIndex) {
+        if (answered) return;
+        answered = true;
+
+        const q = quizSet[currentQuestion];
+        const correctIndex = q.options.findIndex(o => o.correct);
+        const isCorrect = (selectedIndex === correctIndex);
+
+        if (isCorrect) correctCount++;
+        userAnswers.push({ selectedIndex, correctIndex, isCorrect });
+
+        // Style buttons
+        const buttons = document.querySelectorAll('#options .option-btn');
+        buttons.forEach((btn, i) => {
+            btn.disabled = true;
+            if (i === correctIndex) btn.classList.add('correct');
+            else if (i === selectedIndex && !isCorrect) btn.classList.add('wrong');
+        });
+
+        // Feedback
+        const feedback = document.getElementById('feedback-area');
+        feedback.innerHTML = `
+            <div class="feedback-box ${isCorrect ? 'feedback-correct' : 'feedback-wrong'}">
+                <div class="font-bold mb-1">${isCorrect ? '✨ 正解！' : '📖 不正解'}</div>
+                <p class="text-sm leading-relaxed">${q.comment}</p>
+                ${!isCorrect ? `<p class="text-sm font-bold mt-1">正解：${q.options[correctIndex].text}</p>` : ''}
+            </div>
+        `;
+
+        document.getElementById('next-btn').classList.remove('hidden');
+        document.getElementById('next-btn').textContent = (currentQuestion + 1 < quizSet.length) ? '次の問題へ →' : '結果を見る →';
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < quizSet.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    // ============================================================
+    // 結果画面
+    // ============================================================
+    function showResult() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        const resultScreen = document.getElementById('result-screen');
+        resultScreen.classList.remove('hidden');
+        resultScreen.classList.add('fade-in');
+
+        const total = quizSet.length;
+        const pct = Math.round((correctCount / total) * 100);
+
+        // スコアリング
+        document.getElementById('score-fraction').textContent = `${correctCount}/${total}`;
+        const ring = document.getElementById('score-ring');
+        ring.style.setProperty('--pct', pct + '%');
+        ring.style.background = `conic-gradient(#2563eb ${pct}%, #e2e8f0 0%)`;
+
+        // ランク閾値定義
+        const rankThresholds = [
+            { min: 90, badge: '🏆 最高評価', title: `職員室のDX生き字引<br><span class='text-lg font-bold text-blue-500'>〜ITベンダーとタメを張れるレベル〜</span>`, desc: `驚愕の語彙力です！文科省の最新通知を枕に寝ていませんか？先生が職員室にいるだけで「要するにこういうことでしょ」と翻訳される安心感が漂います。その知識を武器に、ぜひ現場の『アナログな壁』を優しく壊していってください。` },
+            { min: 70, badge: '⭐ 優秀',     title: `トレンドに強いDXリーダー<br><span class='text-lg font-bold text-blue-500'>〜カタカナ用語も怖くない！〜</span>`,       desc: `素晴らしい！時代の波をしっかりと捉え、教育の新しいカタチを理解されています。用語を知ることは未来を予測すること。先生の言葉には説得力があります。知識と経験を融合させ、タブレットを使い倒しましょう！` },
+            { min: 50, badge: '💪 成長中',   title: `誠実なデジ・チャレンジャー<br><span class='text-lg font-bold text-blue-500'>〜アルファベット3文字は少し苦手〜</span>`,  desc: `健闘されました！「LMS」だの「DX」だの、世の中3文字にまとめすぎですよね。でも先生は着実に本質へ向かっています。WinBirdと一緒に、一つずつ「なるほど！」を増やしていきましょう。` },
+            { min: 0,  badge: '📚 これから！', title: `伝統を守る用語の守護神<br><span class='text-lg font-bold text-blue-500'>〜美しき日本語の使い手〜</span>`,           desc: `カタカナ用語の乱発に「日本語で言って！」とツッコんでいませんか？その感覚、実はDXにおいても大切です。WinBirdが翻訳をお手伝いしますので、まずは「タブレットをちょっと便利な黒板消し」くらいに思ってみませんか？` },
+        ];
+        const currentRank = rankThresholds.find(r => pct >= r.min);
+
+        document.getElementById('rank-badge').textContent = currentRank.badge;
+        document.getElementById('result-rank').innerHTML = currentRank.title;
+        document.getElementById('result-description').textContent = currentRank.desc;
+
+        // ④ ランクアップヒント（「あと◯問でランクアップ」）
+        const rankupHintEl = document.getElementById('rankup-hint');
+        const nextRank = rankThresholds.find(r => r.min > pct);
+        if (nextRank) {
+            // 次のランクに必要な正解数を計算
+            const neededPct = nextRank.min; // 例：70%
+            const neededCorrect = Math.ceil((neededPct / 100) * total);
+            const gap = neededCorrect - correctCount;
+            if (gap > 0) {
+                rankupHintEl.textContent = `あと${gap}問正解で「${nextRank.badge}」ランク！`;
+            }
+        } else {
+            // 最高ランク（90%以上）の場合
+            rankupHintEl.textContent = '最高ランク達成！レベルを上げて再挑戦？';
+        }
+
+        // ② スコア連動おすすめメッセージ（WinBird誘導なし）
+        const recEl = document.getElementById('score-recommendation');
+        let recHTML = '';
+        if (pct < 50) {
+            recHTML = `
+                <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start gap-3">
+                    <span class="text-2xl">📖</span>
+                    <div>
+                        <p class="font-black text-teal-800 text-sm mb-1">まずは用語集の入門カテゴリから読んでみませんか？</p>
+                        <p class="text-xs text-teal-600 leading-relaxed">難しく感じた用語も、やさしい言葉でひとつひとつ解説しています。読むだけでスコアがぐっと変わるはずです。</p>
+                        <a href="#" class="inline-block mt-2 text-xs font-bold text-teal-700 underline underline-offset-2">用語集（入門）を読む →</a>
+                    </div>
+                </div>`;
+        } else if (pct < 80) {
+            recHTML = `
+                <div class="bg-violet-50 border border-violet-200 rounded-xl p-4 flex items-start gap-3">
+                    <span class="text-2xl">✍️</span>
+                    <div>
+                        <p class="font-black text-violet-800 text-sm mb-1">理解をもう一段深めるなら、コラムがおすすめです。</p>
+                        <p class="text-xs text-violet-600 leading-relaxed">知識として「知っている」と、現場で「使える」は別物。コラムでは用語の背景や実践事例をわかりやすく紹介しています。</p>
+                        <a href="#" class="inline-block mt-2 text-xs font-bold text-violet-700 underline underline-offset-2">コラムを読む →</a>
+                    </div>
+                </div>`;
+        } else {
+            recHTML = `
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-start gap-3">
+                    <span class="text-2xl">🎓</span>
+                    <div>
+                        <p class="font-black text-indigo-800 text-sm mb-1">ここまで知っているなら、用語集の専門カテゴリも読んでみてください。</p>
+                        <p class="text-xs text-indigo-600 leading-relaxed">さらに深い知識が、学校DXの推進役として一段上の視点をもたらしてくれるはずです。</p>
+                        <a href="#" class="inline-block mt-2 text-xs font-bold text-indigo-700 underline underline-offset-2">用語集（専門）を読む →</a>
+                    </div>
+                </div>`;
+        }
+        recEl.innerHTML = recHTML;
+
+        // ③ 振り返り（不正解に用語集リンクを追加）
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+        quizSet.forEach((q, i) => {
+            const { selectedIndex, correctIndex, isCorrect } = userAnswers[i];
+            const div = document.createElement('div');
+            div.className = `p-5 rounded-xl border-l-8 ${isCorrect ? 'correct-bg' : 'wrong-bg shadow-sm'}`;
+
+            // 不正解のとき用語集リンクを生成
+            const wordLink = !isCorrect
+                ? `<a href="#" class="inline-flex items-center gap-1 mt-3 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1.5 rounded-full hover:bg-teal-100 transition-colors">
+                       📖 「${q.term}」を用語集で確認する →
+                   </a>`
+                : '';
+
+            div.innerHTML = `
+                <div class="flex items-start justify-between mb-2">
+                    <h4 class="font-bold text-gray-800 text-sm pr-2">No.${i+1}. ${q.question}</h4>
+                    <span class="text-xl shrink-0">${isCorrect ? '✨' : '📖'}</span>
+                </div>
+                <div class="text-sm space-y-1 mb-3">
+                    <p class="${isCorrect ? 'text-green-700 font-bold' : 'text-gray-500'}">あなたの回答：${q.options[selectedIndex].text}</p>
+                    ${!isCorrect ? `<p class="text-blue-700 font-bold">正解：${q.options[correctIndex].text}</p>` : ''}
+                </div>
+                <div class="bg-white bg-opacity-70 p-3 rounded-lg text-xs text-gray-600 italic leading-relaxed border border-gray-100">
+                    ${q.comment}
+                </div>
+                ${wordLink}
+            `;
+            reviewContainer.appendChild(div);
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    </script>
+</body>
+</html>
